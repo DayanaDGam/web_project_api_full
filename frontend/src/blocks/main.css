@@ -1,0 +1,248 @@
+.main {
+  font-family: "Inter-Black", "Inter", Arial, sans-serif;
+  color:#fff;
+  max-width: 880px;
+  margin: auto;
+  padding-top: 40px;
+}
+
+
+.main__content-paragraph {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.main__content-paragraph .main__paragraph_name {
+  color: #fff;
+  font-size: 42px;
+  line-height: 48px;
+  font-weight: 600;
+  margin: 0;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+}
+
+.main__paragraph_about {
+  margin: 0;
+  font-size: 18px;
+  color: #fff;
+  padding-bottom: 8px;
+}
+
+.main__buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.main__button {
+  background-color: transparent;
+  border: 1px solid #fff;
+  cursor: pointer;
+  color: white;
+}
+
+.main__button_edit {
+  width: 24px;
+  height: 24px;
+  border: none;                 
+  background: transparent;
+  background-image: url("../images/Edit Button.svg"); 
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.main__button_add {
+  width: 120px;
+  height: 40px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.main__gallery {
+  max-width: 880px;        
+  margin: 0 auto 60px;     
+}
+
+.cards__list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); 
+  gap: 21px;                             
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.main__gallery-card {
+  background: #fff;
+  color: #000;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 0 25px rgba(0,0,0,.15);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;           
+}
+
+.main__gallery-card:hover { transform: translateY(-5px); }
+
+.card__image {
+ width: 100%;
+  height: 282px;           
+  object-fit: cover;
+  display: block;
+  cursor: pointer;
+}
+
+.card__description {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 25px 20px;
+}
+
+.card__title{
+  margin: 0;
+  background: #fff;
+  font-weight: 900;
+  font-size: 24px;         
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;    
+  max-width: calc(100% - 36px);
+}
+
+
+.card__like-button {
+  width: 22px;
+  height: 19px;
+  background: url(../images/like-white.svg) no-repeat center / contain;
+  border: none;
+  cursor: pointer;
+  flex: 0 0 22px;
+}
+
+.card__like-button_is-active {
+  background-image: url(../images/like-active.jpeg);
+}
+
+.main__button_like_active {
+  background-image: url(../images/like-active.jpeg);
+}
+
+.card__button_trash {
+  position: absolute;
+  top: 18px;
+  right: 15px;
+  width: 18px;
+  height: 19px;
+  background: url(../images/trash.svg) no-repeat center / contain;
+  border: none;
+  cursor: pointer;
+}
+
+.main__profile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding-bottom: 40px;
+}
+
+.main__content-image {
+  width: 120px;
+  flex-shrink: 0;
+}
+
+.main__profile-image {
+  width: 8rem;            
+  height: 8rem;           
+  border-radius: 50%;     
+  object-fit: cover;      
+  display: block;      
+}
+.main__content-image { position: relative; }
+.avatar-edit-btn {
+  position: absolute;
+  right: 8px; bottom: 8px;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: #000; color:#fff; border:0;
+  display: none; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.main__content-image:hover .avatar-edit-btn { display: flex; }
+.avatar-edit-btn::before { content: "✎"; font-size: 14px; line-height: 1; }
+
+
+@media screen and (max-width: 584px) {
+  .main {
+    max-width: 100%;
+    padding: 20px;
+  }
+
+  .main__profile {
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    padding-bottom: 30px;
+  }
+
+  .main__content-paragraph {
+    align-items: center;
+    text-align: center;
+  }
+
+  .main__paragraph_name {
+    font-size: 24px;
+    line-height: 1.2;
+    text-align: center;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+
+  .main__paragraph_about {
+    font-size: 14px;
+    padding-bottom: 10px;
+  }
+
+  .main__buttons {
+    flex-direction: row;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .main__button_add {
+    width: 100%;
+  }
+
+  .main__gallery {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+@media screen and (min-width: 585px) and (max-width: 880px) {
+  .main {
+    max-width: 700px;
+  }
+
+  .main__gallery {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+}
+
