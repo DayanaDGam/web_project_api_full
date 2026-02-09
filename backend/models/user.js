@@ -38,7 +38,7 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-    select: true, // Por ahora se devuelve en las solicitudes
+    select: false, // Por ahora se devuelve en las solicitudes
   },
 });
 

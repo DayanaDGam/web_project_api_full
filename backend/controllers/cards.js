@@ -1,6 +1,7 @@
 const Card = require('../models/card');
 
 const BAD_REQUEST = 400;
+const FORBIDDEN = 403; // Nuevo: Para cuando no eres el dueño
 const NOT_FOUND = 404;
 const DEFAULT_ERROR = 500;
 
@@ -27,13 +28,26 @@ module.exports.createCard = (req, res) => {
     });
 };
 
+// --- AJUSTE EN DELETECARD (Paso 9) ---
 module.exports.deleteCard = (req, res) => {
-  Card.findByIdAndDelete(req.params.cardId)
-    .orFail()
-    .then((card) => res.send(card))
+  const { cardId } = req.params;
+
+  Card.findById(cardId)
+    .orFail() // Si no existe, lanza DocumentNotFoundError
+    .then((card) => {
+      // Verificamos si el dueño de la tarjeta es el mismo que está logueado
+      // Usamos .toString() porque card.owner es un ObjectId de MongoDB
+      if (card.owner.toString() !== req.user._id) {
+        return res.status(FORBIDDEN).send({ message: 'No tienes permiso para borrar esta tarjeta' });
+      }
+
+      // Si pasa la validación, la borramos
+      return Card.findByIdAndDelete(cardId)
+        .then((deletedCard) => res.send(deletedCard));
+    })
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(BAD_REQUEST).send({ message: 'Datos inválidos' });
+        return res.status(BAD_REQUEST).send({ message: 'ID de tarjeta inválido' });
       }
       if (err.name === 'DocumentNotFoundError') {
         return res.status(NOT_FOUND).send({ message: 'Tarjeta no encontrada' });
@@ -60,7 +74,6 @@ module.exports.likeCard = (req, res) => {
       return res.status(DEFAULT_ERROR).send({ message: 'Error del servidor' });
     });
 };
-
 
 module.exports.dislikeCard = (req, res) => {
   Card.findByIdAndUpdate(

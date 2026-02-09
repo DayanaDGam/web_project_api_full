@@ -1,18 +1,15 @@
 const router = require('express').Router();
-
 const {
   getUsers,
   getUserById,
-  // ✂️ Eliminamos createUser de aquí
+  getCurrentUser, // Importamos el nuevo controlador
   updateProfile,
-  updateAvatar,
+  updateAvatar
 } = require('../controllers/users');
 
+router.get('/me', getCurrentUser); // Esta es la nueva ruta
 router.get('/', getUsers);
 router.get('/:userId', getUserById);
-
-// ✂️ Eliminamos la ruta router.post('/', createUser);
-
 router.patch('/me', updateProfile);
 router.patch('/me/avatar', updateAvatar);
 
