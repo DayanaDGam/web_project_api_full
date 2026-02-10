@@ -1,4 +1,4 @@
-const BASE_URL = "http://34.169.246.146/api";
+const BASE_URL = "http://api.aroundeeuu2026.chickenkiller.com";
 
 const checkResponse = (res) => (res.ok ? res.json() : Promise.reject(res.status));
 
@@ -16,13 +16,12 @@ export const authorize = (email, password) =>
     body: JSON.stringify({ email, password }),
   }).then(checkResponse);
 
-// ✅ ESTO TE FALTA para validar token y sacar el email
 export const getUserData = (token) =>
   fetch(`${BASE_URL}/users/me`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`, // ✅ OJO: con Bearer
+      Authorization: `Bearer ${token}`,
     },
   }).then(checkResponse);
 

@@ -1,5 +1,4 @@
-// Apuntamos a tu servidor de Node.js en local
-const BASE_URL = "http://34.169.246.146/api";
+const BASE_URL = "http://api.aroundeeuu2026.chickenkiller.com";
 
 class Api {
   constructor({ baseUrl, headers }) {
@@ -7,7 +6,6 @@ class Api {
     this._headers = headers;
   }
 
-  // Método vital para inyectar el token en todas las peticiones futuras
   setToken(token) {
     this._headers.Authorization = `Bearer ${token}`;
   }
@@ -20,7 +18,7 @@ class Api {
   }
 
   getUserInfo() {
-    console.log("Intentando obtener info con token:", this._headers.Authorization); // <--- Agrega esto
+    console.log("Intentando obtener info con token:", this._headers.Authorization); 
     return fetch(`${this._baseUrl}/users/me`, {
       headers: this._headers,
     }).then(this._checkResponse);
@@ -63,7 +61,6 @@ class Api {
     }).then(this._checkResponse);
   }
 
-  // Unificamos Like y Dislike según el estado isLiked
   changeLikeCardStatus(cardId, isLiked) {
     return fetch(`${this._baseUrl}/cards/${cardId}/likes`, {
       method: isLiked ? "PUT" : "DELETE",
@@ -72,7 +69,6 @@ class Api {
   }
 }
 
-// Exportamos la instancia configurada
 export const api = new Api({
   baseUrl: BASE_URL,
   headers: {
