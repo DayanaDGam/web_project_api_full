@@ -1,6 +1,5 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors'); // Importamos CORS
 const { errors } = require('celebrate');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
@@ -10,14 +9,11 @@ const { requestLogger, errorLogger } = require('./middlewares/logger');
 const { PORT = 3000 } = process.env;
 const app = express();
 
-// --- CONFIGURACIÓN DE CORS ---
-app.use(cors());
-app.options('*', cors()); // Habilita peticiones pre-flight para todas las rutas
 
 app.use(express.json());
 
 // Conexión a la base de datos
-mongoose.connect('mongodb://localhost:27017/aroundb');
+mongoose.connect('mongodb://127.0.0.1:27017/aroundb');
 mongoose.connection.on('connected', () => console.log('Conectado a MongoDB: aroundb'));
 
 // 1. Logger de solicitudes (Debe ir antes de todas las rutas)
