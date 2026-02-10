@@ -1,4 +1,4 @@
-const BASE_URL = "http://api.aroundeeuu2026.chickenkiller.com";
+const BASE_URL = "https://api.aroundeeuu2026.chickenkiller.com";
 
 const checkResponse = (res) => (res.ok ? res.json() : Promise.reject(res.status));
 
