@@ -1,4 +1,4 @@
-const BASE_URL = "https://se-register-api.en.tripleten-services.com/v1";
+const BASE_URL = "http://34.169.246.146/api";
 
 const checkResponse = (res) => (res.ok ? res.json() : Promise.reject(res.status));
 

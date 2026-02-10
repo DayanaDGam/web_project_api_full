@@ -37,18 +37,16 @@ export default function App() {
     if (!token) return;
 
     auth
-      .getUserData(token)
-      .then((res) => {
-        // Tu backend devuelve el usuario. Ajustamos según el formato recibido.
-        const userEmail = res.email || res.data?.email;
-        setEmail(userEmail);
-        setLoggedIn(true);
-
-        // CONFIGURAR TOKEN EN LA API
-        api.setToken(token);
-
-        navigate("/", { replace: true });
-      })
+  .getUserData(token)
+  .then((res) => {
+    // Ajuste para leer 'data' si tu backend envuelve el objeto, o 'res' directo
+    const userData = res.data || res; 
+    setEmail(userData.email);
+    setCurrentUser(userData); // Importante: guarda el usuario completo aquí también
+    setLoggedIn(true);
+    api.setToken(token);
+    navigate("/", { replace: true });
+  })
       .catch((err) => {
         console.error("Token inválido:", err);
         localStorage.removeItem("jwt");
