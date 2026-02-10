@@ -1,5 +1,5 @@
 // Apuntamos a tu servidor de Node.js en local
-const BASE_URL = "'http://34.169.246.146/api";
+const BASE_URL = "http://34.169.246.146/api";
 
 class Api {
   constructor({ baseUrl, headers }) {
