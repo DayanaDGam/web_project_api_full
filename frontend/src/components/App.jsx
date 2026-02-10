@@ -60,6 +60,8 @@ export default function App() {
 
     Promise.all([api.getUserInfo(), api.getInitialCards()])
       .then(([userData, initialCards]) => {
+        console.log("Datos del usuario recibidos:", userData); 
+        console.log("Tarjetas recibidas:", initialCards);
         setCurrentUser(userData);
         setCards(initialCards);
       })
