@@ -11,12 +11,12 @@ module.exports = (req, res, next) => {
   let payload;
 
   try {
-    // 1. Definimos la clave secreta exacta de tu archivo .env
+
     const secretKey = process.env.NODE_ENV === 'production'
       ? process.env.JWT_SECRET
       : 'proyecto_api_full_19_tripleten_2026';
 
-    // 2. Verificamos el token con esa clave
+
     payload = jwt.verify(token, secretKey);
   } catch (err) {
     return res.status(401).send({ message: 'Error de autorización' });

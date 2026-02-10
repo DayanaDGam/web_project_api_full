@@ -2,20 +2,17 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
-// Constantes de estados de error (se mantienen para construir los objetos de error)
 const BAD_REQUEST = 400;
 const UNAUTHORIZED = 401;
 const NOT_FOUND = 404;
 const CONFLICT = 409;
 
-// Obtener todos los usuarios
 module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send(users))
-    .catch(next); // Pasa cualquier error al manejador central (500 por defecto)
+    .catch(next);
 };
 
-// Obtener usuario por ID
 module.exports.getUserById = (req, res, next) => {
   User.findById(req.params.userId)
     .orFail()
@@ -35,7 +32,6 @@ module.exports.getUserById = (req, res, next) => {
     });
 };
 
-// OBTENER USUARIO ACTUAL
 module.exports.getCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
     .orFail()
@@ -50,7 +46,6 @@ module.exports.getCurrentUser = (req, res, next) => {
     });
 };
 
-// CREAR USUARIO / SIGNUP
 module.exports.createUser = (req, res, next) => {
   const { name, about, avatar, email, password } = req.body;
   bcrypt.hash(password, 10)
@@ -77,7 +72,7 @@ module.exports.createUser = (req, res, next) => {
     });
 };
 
-// LOGIN
+
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   User.findOne({ email }).select('+password')
@@ -95,7 +90,7 @@ module.exports.login = (req, res, next) => {
             throw error;
           }
 
-          // MODIFICACIÓN AQUÍ: Usamos tu clave secreta de 2026
+
           const secretKey = process.env.NODE_ENV === 'production'
             ? process.env.JWT_SECRET
             : 'proyecto_api_full_19_tripleten_2026';
@@ -112,7 +107,7 @@ module.exports.login = (req, res, next) => {
     .catch(next);
 };
 
-// Actualizar Perfil
+
 module.exports.updateProfile = (req, res, next) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
@@ -128,7 +123,6 @@ module.exports.updateProfile = (req, res, next) => {
     });
 };
 
-// Actualizar Avatar
 module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
