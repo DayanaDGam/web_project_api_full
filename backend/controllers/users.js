@@ -2,46 +2,56 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
-// Constantes de estados de error
+// Constantes de estados de error (se mantienen para construir los objetos de error)
 const BAD_REQUEST = 400;
 const UNAUTHORIZED = 401;
-const FORBIDDEN = 403;
 const NOT_FOUND = 404;
 const CONFLICT = 409;
-const DEFAULT_ERROR = 500;
 
 // Obtener todos los usuarios
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send(users))
-    .catch(() => res.status(DEFAULT_ERROR).send({ message: 'Error del servidor' }));
+    .catch(next); // Pasa cualquier error al manejador central (500 por defecto)
 };
 
 // Obtener usuario por ID
-module.exports.getUserById = (req, res) => {
+module.exports.getUserById = (req, res, next) => {
   User.findById(req.params.userId)
     .orFail()
     .then((user) => res.send(user))
     .catch((err) => {
-      if (err.name === 'CastError') return res.status(BAD_REQUEST).send({ message: 'ID inválido' });
-      if (err.name === 'DocumentNotFoundError') return res.status(NOT_FOUND).send({ message: 'Usuario no encontrado' });
-      return res.status(DEFAULT_ERROR).send({ message: 'Error del servidor' });
+      if (err.name === 'CastError') {
+        const error = new Error('ID de usuario inválido');
+        error.statusCode = BAD_REQUEST;
+        return next(error);
+      }
+      if (err.name === 'DocumentNotFoundError') {
+        const error = new Error('Usuario no encontrado');
+        error.statusCode = NOT_FOUND;
+        return next(error);
+      }
+      next(err);
     });
 };
 
-// OBTENER USUARIO ACTUAL (Paso 6)
-module.exports.getCurrentUser = (req, res) => {
+// OBTENER USUARIO ACTUAL
+module.exports.getCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
     .orFail()
     .then((user) => res.send(user))
     .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') return res.status(NOT_FOUND).send({ message: 'Usuario no encontrado' });
-      return res.status(DEFAULT_ERROR).send({ message: 'Error del servidor' });
+      if (err.name === 'DocumentNotFoundError') {
+        const error = new Error('Usuario no encontrado');
+        error.statusCode = NOT_FOUND;
+        return next(error);
+      }
+      next(err);
     });
 };
 
-// CREAR USUARIO / SIGNUP (Paso 2)
-module.exports.createUser = (req, res) => {
+// CREAR USUARIO / SIGNUP
+module.exports.createUser = (req, res, next) => {
   const { name, about, avatar, email, password } = req.body;
   bcrypt.hash(password, 10)
     .then((hash) => User.create({
@@ -53,42 +63,72 @@ module.exports.createUser = (req, res) => {
       res.status(201).send(userResponse);
     })
     .catch((err) => {
-      if (err.code === 11000) return res.status(CONFLICT).send({ message: 'El correo ya existe' });
-      if (err.name === 'ValidationError') return res.status(BAD_REQUEST).send({ message: 'Datos inválidos' });
-      return res.status(DEFAULT_ERROR).send({ message: 'Error del servidor' });
+      if (err.code === 11000) {
+        const error = new Error('El correo ya existe');
+        error.statusCode = CONFLICT;
+        return next(error);
+      }
+      if (err.name === 'ValidationError') {
+        const error = new Error('Datos de usuario inválidos');
+        error.statusCode = BAD_REQUEST;
+        return next(error);
+      }
+      next(err);
     });
 };
 
-// LOGIN (Paso 3)
-module.exports.login = (req, res) => {
+// LOGIN
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   User.findOne({ email }).select('+password')
     .then((user) => {
-      if (!user) return Promise.reject(new Error('Correo o contraseña incorrectos'));
+      if (!user) {
+        const error = new Error('Correo o contraseña incorrectos');
+        error.statusCode = UNAUTHORIZED;
+        throw error; // Al lanzar el error, el catch lo captura y lo envía a next()
+      }
       return bcrypt.compare(password, user.password)
         .then((matched) => {
-          if (!matched) return Promise.reject(new Error('Correo o contraseña incorrectos'));
+          if (!matched) {
+            const error = new Error('Correo o contraseña incorrectos');
+            error.statusCode = UNAUTHORIZED;
+            throw error;
+          }
           const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
           res.send({ token });
         });
     })
-    .catch((err) => res.status(UNAUTHORIZED).send({ message: err.message }));
+    .catch(next);
 };
 
 // Actualizar Perfil
-module.exports.updateProfile = (req, res) => {
+module.exports.updateProfile = (req, res, next) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .orFail()
     .then((user) => res.send(user))
-    .catch((err) => res.status(BAD_REQUEST).send({ message: 'Error al actualizar' }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        const error = new Error('Datos inválidos para actualizar perfil');
+        error.statusCode = BAD_REQUEST;
+        return next(error);
+      }
+      next(err);
+    });
 };
 
 // Actualizar Avatar
-module.exports.updateAvatar = (req, res) => {
+module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .orFail()
     .then((user) => res.send(user))
-    .catch((err) => res.status(BAD_REQUEST).send({ message: 'Error al actualizar avatar' }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        const error = new Error('URL de avatar inválida');
+        error.statusCode = BAD_REQUEST;
+        return next(error);
+      }
+      next(err);
+    });
 };

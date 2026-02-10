@@ -1,49 +1,80 @@
-const BASE_URL = "https://around-api.en.tripleten-services.com/v1";
+// Apuntamos a tu servidor de Node.js en local
+const BASE_URL = "http://localhost:3000";
 
-const checkResponse = (res) => (res.ok ? res.json() : Promise.reject(res.status));
+class Api {
+  constructor({ baseUrl, headers }) {
+    this._baseUrl = baseUrl;
+    this._headers = headers;
+  }
 
-export const getUserInfo = (token) =>
-  fetch(`${BASE_URL}/users/me`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-  }).then(checkResponse);
+  // Método vital para inyectar el token en todas las peticiones futuras
+  setToken(token) {
+    this._headers.Authorization = `Bearer ${token}`;
+  }
 
-export const getInitialCards = (token) =>
-  fetch(`${BASE_URL}/cards`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-  }).then(checkResponse);
+  _checkResponse(res) {
+    if (res.ok) {
+      return res.json();
+    }
+    return Promise.reject(`Error: ${res.status}`);
+  }
 
-export const setUserInfo = ({ name, about }, token) =>
-  fetch(`${BASE_URL}/users/me`, {
-    method: "PATCH",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ name, about }),
-  }).then(checkResponse);
+  getUserInfo() {
+    return fetch(`${this._baseUrl}/users/me`, {
+      headers: this._headers,
+    }).then(this._checkResponse);
+  }
 
-export const setUserAvatar = ({ avatar }, token) =>
-  fetch(`${BASE_URL}/users/me/avatar`, {
-    method: "PATCH",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ avatar }),
-  }).then(checkResponse);
+  getInitialCards() {
+    return fetch(`${this._baseUrl}/cards`, {
+      headers: this._headers,
+    }).then(this._checkResponse);
+  }
 
-export const addCard = ({ name, link }, token) =>
-  fetch(`${BASE_URL}/cards`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ name, link }),
-  }).then(checkResponse);
+  updateUserInfo({ name, about }) {
+    return fetch(`${this._baseUrl}/users/me`, {
+      method: "PATCH",
+      headers: this._headers,
+      body: JSON.stringify({ name, about }),
+    }).then(this._checkResponse);
+  }
+
+  updateAvatar(avatar) {
+    return fetch(`${this._baseUrl}/users/me/avatar`, {
+      method: "PATCH",
+      headers: this._headers,
+      body: JSON.stringify({ avatar }),
+    }).then(this._checkResponse);
+  }
+
+  addNewCard({ name, link }) {
+    return fetch(`${this._baseUrl}/cards`, {
+      method: "POST",
+      headers: this._headers,
+      body: JSON.stringify({ name, link }),
+    }).then(this._checkResponse);
+  }
+
+  deleteCard(cardId) {
+    return fetch(`${this._baseUrl}/cards/${cardId}`, {
+      method: "DELETE",
+      headers: this._headers,
+    }).then(this._checkResponse);
+  }
+
+  // Unificamos Like y Dislike según el estado isLiked
+  changeLikeCardStatus(cardId, isLiked) {
+    return fetch(`${this._baseUrl}/cards/${cardId}/likes`, {
+      method: isLiked ? "PUT" : "DELETE",
+      headers: this._headers,
+    }).then(this._checkResponse);
+  }
+}
+
+// Exportamos la instancia configurada
+export const api = new Api({
+  baseUrl: BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});

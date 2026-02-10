@@ -31,7 +31,7 @@ export default function App() {
 
   const closeAllPopups = () => setPopup(null);
 
-  // ✅ 1) Revisión de token al cargar la app
+  // 🛡️ Revisión de token al cargar la aplicación
   useEffect(() => {
     const token = localStorage.getItem("jwt");
     if (!token) return;
@@ -39,12 +39,12 @@ export default function App() {
     auth
       .getUserData(token)
       .then((res) => {
-        // res puede venir como {data:{email}} según doc
-        const userEmail = res?.data?.email || "";
+        // Tu backend devuelve el usuario. Ajustamos según el formato recibido.
+        const userEmail = res.email || res.data?.email;
         setEmail(userEmail);
         setLoggedIn(true);
 
-        // importantísimo: setear token para Around API
+        // CONFIGURAR TOKEN EN LA API
         api.setToken(token);
 
         navigate("/", { replace: true });
@@ -53,37 +53,23 @@ export default function App() {
         console.error("Token inválido:", err);
         localStorage.removeItem("jwt");
         setLoggedIn(false);
-        setEmail("");
       });
   }, [navigate]);
 
-  // ✅ 2) Cargar datos SOLO si está logueado
+  // 📥 Cargar datos de usuario y tarjetas solo si está logueado
   useEffect(() => {
     if (!loggedIn) return;
 
-    (async () => {
-      try {
-        const [user, initialCards] = await Promise.all([
-          api.getUserInfo(),
-          api.getInitialCards(),
-        ]);
-        setCurrentUser(user);
+    Promise.all([api.getUserInfo(), api.getInitialCards()])
+      .then(([userData, initialCards]) => {
+        setCurrentUser(userData);
         setCards(initialCards);
-      } catch (e) {
-        console.error("init error:", e);
-      }
-    })();
+      })
+      .catch((err) => console.error("Error al cargar datos iniciales:", err));
   }, [loggedIn]);
-
-  // ------- Popups -------
-  function handleOpenPopup(p) {
-    setPopup(p);
-  }
 
   // ------- AUTH handlers -------
   const handleRegister = ({ email: userEmail, password }) => {
-    if (!userEmail || !password) return;
-
     auth
       .register(userEmail, password)
       .then(() => {
@@ -99,22 +85,15 @@ export default function App() {
   };
 
   const handleLogin = ({ email: userEmail, password }) => {
-    if (!userEmail || !password) return;
-
     auth
       .authorize(userEmail, password)
       .then((data) => {
         if (data?.token) {
           localStorage.setItem("jwt", data.token);
-
-          // setear token para Around API
-          api.setToken(data.token);
-
+          api.setToken(data.token); // Configurar token
           setLoggedIn(true);
           setEmail(userEmail);
           navigate("/");
-        } else {
-          throw new Error("No token in response");
         }
       })
       .catch((err) => {
@@ -136,15 +115,12 @@ export default function App() {
   // ------- Around handlers -------
   async function handleUpdateAvatar(payload) {
     try {
-      const avatarUrl =
-        typeof payload === "string" ? payload : payload?.avatar?.trim();
-      if (!avatarUrl) return;
-
+      const avatarUrl = typeof payload === "string" ? payload : payload?.avatar;
       const updated = await api.updateAvatar(avatarUrl);
       setCurrentUser(updated);
       closeAllPopups();
     } catch (err) {
-      console.error("⛔ update avatar:", err);
+      console.error(err);
     }
   }
 
@@ -154,18 +130,19 @@ export default function App() {
       setCurrentUser(updated);
       closeAllPopups();
     } catch (e) {
-      console.error("update user:", e);
+      console.error(e);
     }
   }
 
   async function handleCardLike(card) {
+    // Verificamos si el ID del usuario actual está en el array de likes
+    const isLiked = card.likes.some((id) => id === currentUser._id);
+
     try {
-      // ojo: algunos backends devuelven likes, no isLiked.
-      // si tu Card ya calcula isLiked, ok.
-      const toggled = await api.changeLikeCardStatus(card._id, !card.isLiked);
-      setCards((s) => s.map((c) => (c._id === card._id ? toggled : c)));
+      const toggledCard = await api.changeLikeCardStatus(card._id, !isLiked);
+      setCards((s) => s.map((c) => (c._id === card._id ? toggledCard : c)));
     } catch (e) {
-      console.error("like:", e);
+      console.error(e);
     }
   }
 
@@ -174,17 +151,17 @@ export default function App() {
       await api.deleteCard(card._id);
       setCards((s) => s.filter((c) => c._id !== card._id));
     } catch (e) {
-      console.error("delete:", e);
+      console.error(e);
     }
   }
 
-  async function handleAddPlaceSubmit({ name, link }) {
+  async function handleAddPlaceSubmit(data) {
     try {
-      const newCard = await api.addNewCard({ name, link });
-      setCards((s) => [newCard, ...s]);
+      const newCard = await api.addNewCard(data);
+      setCards([newCard, ...cards]);
       closeAllPopups();
     } catch (e) {
-      console.error("add card:", e);
+      console.error(e);
     }
   }
 
@@ -194,7 +171,6 @@ export default function App() {
     <CurrentUserContext.Provider value={ctxValue}>
       <div className="page__content">
         <Header loggedIn={loggedIn} email={email} onSignOut={handleSignOut} />
-
         <Routes>
           <Route
             path="/"
@@ -205,44 +181,20 @@ export default function App() {
                   onCardLike={handleCardLike}
                   onCardDelete={handleCardDelete}
                   onAddPlaceSubmit={handleAddPlaceSubmit}
-                  onOpenPopup={handleOpenPopup}
+                  onOpenPopup={(p) => setPopup(p)}
                   onClosePopup={closeAllPopups}
                 />
               </ProtectedRoute>
             }
           />
-
-          <Route
-            path="/signup"
-            element={
-              loggedIn ? (
-                <Navigate to="/" replace />
-              ) : (
-                <Register onRegister={handleRegister} />
-              )
-            }
-          />
-
-          <Route
-            path="/signin"
-            element={
-              loggedIn ? (
-                <Navigate to="/" replace />
-              ) : (
-                <Login onLogin={handleLogin} />
-              )
-            }
-          />
-
-          <Route
-            path="*"
-            element={<Navigate to={loggedIn ? "/" : "/signin"} replace />}
-          />
+          <Route path="/signup" element={<Register onRegister={handleRegister} />} />
+          <Route path="/signin" element={<Login onLogin={handleLogin} />} />
+          <Route path="*" element={<Navigate to={loggedIn ? "/" : "/signin"} />} />
         </Routes>
 
         {popup && (
           <Popup onClose={closeAllPopups} title={popup.title}>
-            <div className="popup__content">{popup.children}</div>
+            {popup.children}
           </Popup>
         )}
 
@@ -251,7 +203,6 @@ export default function App() {
           isSuccess={isInfoSuccess}
           onClose={() => setIsInfoOpen(false)}
         />
-
         <Footer />
       </div>
     </CurrentUserContext.Provider>

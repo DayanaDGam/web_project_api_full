@@ -1,10 +1,12 @@
-# Logs
-logs
+# Logs (Cubre request.log, error.log y logs de npm)
 *.log
 npm-debug.log*
 
-# Directorio de dependencias
-node_modules
+# Dependencias
+node_modules/
+
+# Variables de entorno (¡Muy importante para cuando uses .env!)
+.env
 
 # Directorio de cache npm opcional
 .npm
