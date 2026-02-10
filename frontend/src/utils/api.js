@@ -20,6 +20,7 @@ class Api {
   }
 
   getUserInfo() {
+    console.log("Intentando obtener info con token:", this._headers.Authorization); // <--- Agrega esto
     return fetch(`${this._baseUrl}/users/me`, {
       headers: this._headers,
     }).then(this._checkResponse);

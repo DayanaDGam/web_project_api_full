@@ -36,15 +36,13 @@ export default function App() {
     const token = localStorage.getItem("jwt");
     if (!token) return;
 
-    auth
-  .getUserData(token)
+    auth.getUserData(token)
   .then((res) => {
-    // Ajuste para leer 'data' si tu backend envuelve el objeto, o 'res' directo
+    api.setToken(token); // <--- Muévelo aquí arriba, antes de los estados
     const userData = res.data || res; 
     setEmail(userData.email);
-    setCurrentUser(userData); // Importante: guarda el usuario completo aquí también
+    setCurrentUser(userData);
     setLoggedIn(true);
-    api.setToken(token);
     navigate("/", { replace: true });
   })
       .catch((err) => {
