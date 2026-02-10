@@ -85,7 +85,7 @@ module.exports.login = (req, res, next) => {
       if (!user) {
         const error = new Error('Correo o contraseña incorrectos');
         error.statusCode = UNAUTHORIZED;
-        throw error; // Al lanzar el error, el catch lo captura y lo envía a next()
+        throw error;
       }
       return bcrypt.compare(password, user.password)
         .then((matched) => {
@@ -94,7 +94,18 @@ module.exports.login = (req, res, next) => {
             error.statusCode = UNAUTHORIZED;
             throw error;
           }
-          const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
+
+          // MODIFICACIÓN AQUÍ: Usamos tu clave secreta de 2026
+          const secretKey = process.env.NODE_ENV === 'production'
+            ? process.env.JWT_SECRET
+            : 'proyecto_api_full_19_tripleten_2026';
+
+          const token = jwt.sign(
+            { _id: user._id },
+            secretKey,
+            { expiresIn: '7d' }
+          );
+
           res.send({ token });
         });
     })
