@@ -1,27 +1,27 @@
 const jwt = require('jsonwebtoken');
 
 module.exports = (req, res, next) => {
-  // 1. Obtenemos el encabezado de autorización
   const { authorization } = req.headers;
 
-  // 2. Verificamos que el encabezado exista y empiece por 'Bearer '
   if (!authorization || !authorization.startsWith('Bearer ')) {
     return res.status(401).send({ message: 'Error de autorización' });
   }
 
-  // 3. Extraemos el token (quitamos la palabra 'Bearer ')
   const token = authorization.replace('Bearer ', '');
   let payload;
 
   try {
-    // 4. Verificamos el token con la clave secreta
-    payload = jwt.verify(token, 'some-secret-key');
+    // 1. Definimos la clave secreta exacta de tu archivo .env
+    const secretKey = process.env.NODE_ENV === 'production'
+      ? process.env.JWT_SECRET
+      : 'proyecto_api_full_19_tripleten_2026';
+
+    // 2. Verificamos el token con esa clave
+    payload = jwt.verify(token, secretKey);
   } catch (err) {
-    // Si el token es inválido o expiró
     return res.status(401).send({ message: 'Error de autorización' });
   }
 
-  // 5. Añadimos el payload al objeto user y pasamos al siguiente middleware
   req.user = payload;
   next();
 };
